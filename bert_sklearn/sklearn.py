@@ -516,6 +516,7 @@ class BertClassifier(BaseBertEstimator, ClassifierMixin):
             with torch.no_grad():
                 logits = self.model(*batch)
                 if self.final_activation == 'sigmoid':
+                    print('running sigmoid')
                     prob = F.sigmoid(logits, dim=-1)
                 else:
                     prob = F.softmax(logits, dim=-1)
