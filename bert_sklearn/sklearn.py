@@ -155,7 +155,7 @@ class BaseBertEstimator(BaseEstimator):
                  gradient_accumulation_steps=1, fp16=False, loss_scale=0,
                  local_rank=-1, use_cuda=True, random_state=42,
                  validation_fraction=0.1, logfile='bert_sklearn.log',
-                 ignore_label=None, final_activation='softmax'):
+                 ignore_label=None, final_activation='sigmoid'):
 
         self.id2label, self.label2id = {}, {}
         self.input_text_pairs = None
