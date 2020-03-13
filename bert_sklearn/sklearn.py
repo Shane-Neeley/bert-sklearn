@@ -517,7 +517,7 @@ class BertClassifier(BaseBertEstimator, ClassifierMixin):
                 logits = self.model(*batch)
                 if self.final_activation == 'sigmoid':
                     print('running sigmoid')
-                    prob = F.sigmoid(logits, dim=-1)
+                    prob = F.sigmoid(logits)
                 else:
                     prob = F.softmax(logits, dim=-1)
             prob = prob.detach().cpu().numpy()
