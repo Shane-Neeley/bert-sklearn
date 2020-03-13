@@ -155,7 +155,7 @@ class BaseBertEstimator(BaseEstimator):
                  gradient_accumulation_steps=1, fp16=False, loss_scale=0,
                  local_rank=-1, use_cuda=True, random_state=42,
                  validation_fraction=0.1, logfile='bert_sklearn.log',
-                 ignore_label=None, final_activation='sigmoid'):
+                 ignore_label=None, final_activation='softmax'):
 
         self.id2label, self.label2id = {}, {}
         self.input_text_pairs = None
@@ -516,7 +516,6 @@ class BertClassifier(BaseBertEstimator, ClassifierMixin):
             with torch.no_grad():
                 logits = self.model(*batch)
                 if self.final_activation == 'sigmoid':
-                    print('running sigmoid')
                     prob = F.sigmoid(logits)
                 else:
                     prob = F.softmax(logits, dim=-1)
