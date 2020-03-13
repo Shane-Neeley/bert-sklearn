@@ -155,7 +155,7 @@ class BaseBertEstimator(BaseEstimator):
                  gradient_accumulation_steps=1, fp16=False, loss_scale=0,
                  local_rank=-1, use_cuda=True, random_state=42,
                  validation_fraction=0.1, logfile='bert_sklearn.log',
-                 ignore_label=None):
+                 ignore_label=None, final_activation='softmax'):
 
         self.id2label, self.label2id = {}, {}
         self.input_text_pairs = None
@@ -184,6 +184,7 @@ class BaseBertEstimator(BaseEstimator):
         self.validation_fraction = validation_fraction
         self.logfile = logfile
         self.ignore_label = ignore_label
+        self.final_activation = final_activation
         self.majority_label = None
         self.majority_id = None
 
@@ -514,7 +515,10 @@ class BertClassifier(BaseBertEstimator, ClassifierMixin):
             batch = tuple(t.to(device) for t in batch)
             with torch.no_grad():
                 logits = self.model(*batch)
-                prob = F.softmax(logits, dim=-1)
+                if self.final_activation == 'sigmoid':
+                    prob = F.sigmoid(logits, dim=-1)
+                else:
+                    prob = F.softmax(logits, dim=-1)
             prob = prob.detach().cpu().numpy()
             probs.append(prob)
         sys.stdout.flush()
@@ -802,7 +806,7 @@ class BertTokenClassifier(BaseBertEstimator, ClassifierMixin):
         """
         tokens = self.basic_tokenizer.tokenize(text)
         tags = self.predict(np.array([tokens]))[0]
-        if verbose:                
+        if verbose:
             data = {"token": tokens, "predicted tags": tags}
             df = pd.DataFrame(data=data)
             if IN_COLAB:
