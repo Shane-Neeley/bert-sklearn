@@ -145,6 +145,8 @@ class BaseBertEstimator(BaseEstimator):
         path name for logfile
     ignore_label : list of strings
         Labels to be ignored when calculating f1 for token classifiers
+    ignore_label : bool
+        if True, changes final activation layer to sigmoid for multi-label classification
     """
     def __init__(self, bert_model='bert-base-uncased',
                  bert_config_json=None, bert_vocab=None,
@@ -155,7 +157,7 @@ class BaseBertEstimator(BaseEstimator):
                  gradient_accumulation_steps=1, fp16=False, loss_scale=0,
                  local_rank=-1, use_cuda=True, random_state=42,
                  validation_fraction=0.1, logfile='bert_sklearn.log',
-                 ignore_label=None, final_activation='softmax'):
+                 ignore_label=None, multilabel=False):
 
         self.id2label, self.label2id = {}, {}
         self.input_text_pairs = None
@@ -184,7 +186,7 @@ class BaseBertEstimator(BaseEstimator):
         self.validation_fraction = validation_fraction
         self.logfile = logfile
         self.ignore_label = ignore_label
-        self.final_activation = final_activation
+        self.multilabel = multilabel
         self.majority_label = None
         self.majority_id = None
 
@@ -515,8 +517,8 @@ class BertClassifier(BaseBertEstimator, ClassifierMixin):
             batch = tuple(t.to(device) for t in batch)
             with torch.no_grad():
                 logits = self.model(*batch)
-                if self.final_activation == 'sigmoid':
-                    prob = F.sigmoid(logits)
+                if self.multilabel:
+                    prob = torch.sigmoid(logits)
                 else:
                     prob = F.softmax(logits, dim=-1)
             prob = prob.detach().cpu().numpy()

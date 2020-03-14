@@ -69,7 +69,10 @@ class TextFeaturesDataset(Dataset):
 
             label = self.y[index]
 
-            if self.model_type == 'text_classifier':
+            # HACK, replace this with model type check
+            if len(label) > 1:
+                target = torch.tensor(label, dtype=torch.float32)
+            elif self.model_type == 'text_classifier':
                 label_id = self.label2id[label]
                 target = torch.tensor(label_id, dtype=torch.long)
             elif self.model_type == 'text_regressor':
